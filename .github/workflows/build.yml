@@ -15,9 +15,9 @@ jobs:
         run: |
           set -x
           echo "Initial free space"
-          df -h
+          df -h / /mnt
           docker rmi $(docker image ls -aq)
-          df -h
+          df -h / /mnt
           echo "Listing 100 largest packages"
           dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -rn | head -n 100
           echo "Removing large packages"
@@ -25,10 +25,10 @@ jobs:
           sudo apt-get remove -y '^ghc-.*' '^dotnet-.*' azure-cli google-cloud-sdk 'adoptopenjdk-.*-hotspot' google-chrome-stable firefox 'php.*'
           sudo apt-get autoremove -y
           sudo apt-get clean
-          df -h
+          df -h / /mnt
           echo "Removing remaining large directories"
           rm -rf /usr/share/dotnet/
-          df -h
+          df -h / /mnt
           rm -rf "$AGENT_TOOLSDIRECTORY"
           echo "Disk space after cleanup"
-          df -h
+          df -h / /mnt
