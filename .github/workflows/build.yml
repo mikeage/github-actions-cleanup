@@ -1,0 +1,34 @@
+# yamllint disable rule:line-length
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+---
+name: Cleanup tests
+
+on:  # yamllint disable-line rule:truthy
+  push:
+
+jobs:
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Free extra space
+        run: |
+          set -x
+          echo "Initial free space"
+          df -h
+          docker rmi $(docker image ls -aq)
+          df -h
+          echo "Listing 100 largest packages"
+          dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -rn | head -n 100
+          echo "Removing large packages"
+          sudo apt-get update
+          sudo apt-get remove -y '^ghc-.*' '^dotnet-.*' azure-cli google-cloud-sdk 'adoptopenjdk-.*-hotspot' google-chrome-stable firefox 'php.*'
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+          df -h
+          echo "Removing remaining large directories"
+          rm -rf /usr/share/dotnet/
+          df -h
+          rm -rf "$AGENT_TOOLSDIRECTORY"
+          echo "Disk space after cleanup"
+          df -h
